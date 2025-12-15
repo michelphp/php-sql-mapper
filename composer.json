@@ -1,0 +1,24 @@
+{
+  "name": "michel/php-sql-mapper",
+  "description": "A powerful PHP library that not only builds complex SQL queries but also maps the results into structured object graphs. It simplifies handling relational data by automatically transforming flat result sets from joins into nested arrays, making it ideal for working with one-to-one and one-to-many relationships.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Michel.F"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Michel\\SqlMapper\\": "src",
+      "Test\\Michel\\SqlMapper\\": "tests"
+    }
+  },
+  "require": {
+    "php": ">=7.4",
+    "ext-pdo": "*"
+  },
+  "require-dev": {
+    "michel/unitester": "^1.0.0"
+  }
+}
