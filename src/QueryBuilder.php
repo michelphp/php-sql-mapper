@@ -1,6 +1,6 @@
 <?php
 
-namespace Michel\Sql;
+namespace Michel\SqlMapper;
 
 /**
  * @package	php-query-builder

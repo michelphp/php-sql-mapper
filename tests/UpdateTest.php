@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\Michel\Sql;
+namespace Test\Michel\SqlMapper;
 
 use Michel\SqlMapper\Update;
 use Michel\UniTester\TestCase;

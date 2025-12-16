@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\Michel\Sql;
+namespace Test\Michel\SqlMapper;
 
 use Michel\UniTester\TestCase;
 use Michel\SqlMapper\Delete;

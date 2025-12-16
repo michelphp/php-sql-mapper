@@ -1,6 +1,6 @@
 <?php
 
-namespace Michel\Sql;
+namespace Michel\SqlMapper;
 
 use LogicException;
 use Michel\SqlMapper\Interfaces\QueryInterface;
