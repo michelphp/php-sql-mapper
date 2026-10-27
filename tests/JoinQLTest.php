@@ -38,6 +38,21 @@ class JoinQLTest extends TestCase
         $this->testWithLimit();
         $this->testWithParams();
         $this->testPaginationWithOffsetAndLimit();
+        $this->testCloneHasItsOwnQuery();
+    }
+
+    public function testCloneHasItsOwnQuery(): void
+    {
+        $original = (new JoinQL($this->connection))->select('post', 'p', ['id', 'title']);
+        $sql = $original->getQuery();
+
+        $copy = clone $original;
+        $copy->where('p.id = :id')->orderBy('p.title')->setParam('id', 1);
+
+        $this->assertEquals($sql, $original->getQuery());
+        $this->assertEquals($sql . ' WHERE p.id = :id ORDER BY p.title ASC', $copy->getQuery());
+        $this->assertEquals(10, count($original->getResult()));
+        $this->assertEquals(1, count($copy->getResult()));
     }
 
     public function testSelect(): void

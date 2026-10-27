@@ -50,6 +50,18 @@ final class JoinQL
         $this->limitWriter = $limitWriter;
     }
 
+    /**
+     * A copy gets its own SELECT: adding a condition or a join to the copy never changes the original
+     * (which may be kept as a template to run the same query again with other parameters).
+     */
+    public function __clone()
+    {
+        if ($this->selectQuery !== null) {
+            $this->selectQuery = clone $this->selectQuery;
+        }
+        $this->lastRow = null;
+    }
+
     public function select(string $table, string $aliasTable, array $columns): self
     {
         $this->resolveColumns($aliasTable, $columns);
