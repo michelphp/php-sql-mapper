@@ -502,26 +502,6 @@ final class JoinQL
 
     private function buildGraph(array $data): array
     {
-        $tables[$this->firstAlias] = new Table($this->firstTable, $this->firstAlias);
-        foreach ($this->joins as $alias => $join) {
-            $tables[$alias] = new Table($join['to'], $alias, $join['one_to_many'], $join['key_relation'], $join['foreign_key']);
-        }
-        foreach ($tables as $alias => $table) {
-            foreach ($this->joins as $join) {
-                if ($join['alias'] !== $alias) {
-                    continue;
-                }
-                /** @var array<Table> $parents */
-                $parents = array_values(array_filter($tables, function ($table) use ($join) {
-                    return $table->getTable() === $join['from'] || $join['from'] === $table->getAlias();
-                }));
-
-                foreach (array_unique($parents) as $parent) {
-                    $parent->addChild($table);
-                }
-            }
-        }
-
         if ($data === []) {
             return [];
         }
@@ -542,7 +522,73 @@ final class JoinQL
             unset($row);
         }
 
+        if ($this->joins === []) {
+            $rows = $this->buildRowsWithoutJoins($data, $keys);
+            if ($rows !== null) {
+                return $rows;
+            }
+        }
+
+        $tables[$this->firstAlias] = new Table($this->firstTable, $this->firstAlias);
+        foreach ($this->joins as $alias => $join) {
+            $tables[$alias] = new Table($join['to'], $alias, $join['one_to_many'], $join['key_relation'], $join['foreign_key']);
+        }
+        foreach ($tables as $alias => $table) {
+            foreach ($this->joins as $join) {
+                if ($join['alias'] !== $alias) {
+                    continue;
+                }
+                /** @var array<Table> $parents */
+                $parents = array_values(array_filter($tables, function ($table) use ($join) {
+                    return $table->getTable() === $join['from'] || $join['from'] === $table->getAlias();
+                }));
+
+                foreach (array_unique($parents) as $parent) {
+                    $parent->addChild($table);
+                }
+            }
+        }
+
         return (new GraphBuilder($data, $tables, $this->primaryKey))->buildGraph();
+    }
+
+    /**
+     * Without joins a row is already one root entity: only the "alias__" prefix has to go, no graph to build.
+     * Gives the same result as GraphBuilder: rows merged by primary key at the position of their first
+     * occurrence, a row of null values becomes null.
+     * Returns null when GraphBuilder must be used instead (a column of another alias, or the primary key is not
+     * the first column: GraphBuilder relies on it to start a new entity).
+     *
+     * @param array<string> $keys
+     */
+    private function buildRowsWithoutJoins(array $data, array $keys): ?array
+    {
+        $attributes = [];
+        foreach ($keys as $key) {
+            [$alias, $attribute] = explode('__', $key);
+            if ($alias !== $this->firstAlias) {
+                return null;
+            }
+            $attributes[] = $attribute;
+        }
+        if ($attributes[0] !== $this->primaryKey) {
+            return null;
+        }
+
+        $rows = [];
+        foreach ($data as $row) {
+            $row = array_combine($attributes, $row);
+            $rows[$row[$this->primaryKey]] = $row;
+        }
+
+        foreach ($rows as &$row) {
+            if ($row[$this->primaryKey] === null && count(array_filter($row, 'is_null')) === count($row)) {
+                $row = null;
+            }
+        }
+        unset($row);
+
+        return array_values($rows);
     }
 
     private function resolveColumns(string $aliasTable, array &$columns): void
