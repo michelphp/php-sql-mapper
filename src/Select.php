@@ -189,7 +189,7 @@ final class Select implements QueryInterface
      */
     public function from(string $table, ?string $alias = null): self
     {
-        $this->from[] = $alias === null ? $table : "${table} AS ${alias}";
+        $this->from[] = $alias === null ? $table : "{$table} AS {$alias}";
         return $this;
     }
 

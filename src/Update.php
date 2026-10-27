@@ -29,7 +29,7 @@ final class Update implements QueryInterface
      */
     public function __construct(string $table, ?string $alias = null)
     {
-        $this->table = $alias === null ? $table : "${table} AS ${alias}";
+        $this->table = $alias === null ? $table : "{$table} AS {$alias}";
     }
 
     /**
