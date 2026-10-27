@@ -526,16 +526,20 @@ final class JoinQL
             return [];
         }
 
-        foreach ($data as &$row) {
-            $copyRow = $row;
-            foreach ($row as $key => $value) {
-                $aliasTable = explode('__', $key)[0];
-                if (isset($this->aliases[$aliasTable][$key])) {
-                    $copyRow[$this->aliases[$aliasTable][$key]] = $value;
-                }
+        // Every row has the same columns: restore the aliases shortened by $aliasMaxLength once, from the first row.
+        $keys = [];
+        $renamed = false;
+        foreach (array_keys(reset($data)) as $key) {
+            $aliasTable = explode('__', $key)[0];
+            $originalKey = $this->aliases[$aliasTable][$key] ?? $key;
+            $renamed = $renamed || $originalKey !== $key;
+            $keys[] = $originalKey;
+        }
+        if ($renamed) {
+            foreach ($data as &$row) {
+                $row = array_combine($keys, $row);
             }
-
-            $row = $copyRow;
+            unset($row);
         }
 
         return (new GraphBuilder($data, $tables, $this->primaryKey))->buildGraph();

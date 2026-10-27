@@ -50,8 +50,9 @@ final class GraphBuilder
             throw new LogicException('No data to build graph from, dataFlattened is empty');
         }
 
+        $columns = $this->resolveColumns(array_keys(reset($this->dataFlattened)));
         foreach ($this->dataFlattened as $row) {
-            $this->insertRowIntoGraph($graph, $row);
+            $this->insertRowIntoGraph($graph, $row, $columns);
         }
         $this->dataFlattened = [];
 
@@ -59,13 +60,18 @@ final class GraphBuilder
         return reset($graph);
     }
 
-    private function insertRowIntoGraph(array &$graph, array $row): void
+    /**
+     * Every row has the same columns: split "alias__attribute", find the parent table and drop the foreign keys
+     * once, instead of once per cell.
+     *
+     * @param array<string> $keys
+     * @return array<int, array{0: string, 1: string, 2: string, 3: ?string}> key, entity alias, attribute, parent alias
+     */
+    private function resolveColumns(array $keys): array
     {
-        $references = [];
-
-        foreach ($row as $key => $value) {
+        $columns = [];
+        foreach ($keys as $key) {
             [$entity, $attribute] = explode('__', $key);
-            $parent = $this->tables[$entity]->getParent();
             $table = $this->tables[$entity];
             foreach ($table->getChildren() as $child) {
                 if ($child->getSourceForeignKey() === $attribute) {
@@ -73,13 +79,24 @@ final class GraphBuilder
                 }
             }
 
-            $foreignKey = $table->getSourceForeignKey();
-            if ($attribute === $foreignKey) {
+            if ($attribute === $table->getSourceForeignKey()) {
                 continue;
             }
-            if (!isset($references[$entity])) {
-                $parent = $parent !== null ? $parent->getAlias() : null;
 
+            $parent = $table->getParent();
+            $columns[] = [$key, $entity, $attribute, $parent !== null ? $parent->getAlias() : null];
+        }
+
+        return $columns;
+    }
+
+    private function insertRowIntoGraph(array &$graph, array $row, array $columns): void
+    {
+        $references = [];
+
+        foreach ($columns as [$key, $entity, $attribute, $parent]) {
+            $value = $row[$key];
+            if (!isset($references[$entity])) {
                 if ($parent === null) {
                     if (!isset($graph[$entity])) {
                         $graph[$entity] = [];
