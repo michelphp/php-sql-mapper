@@ -113,19 +113,7 @@ final class Expr
      */
     public static function in(string $key, array $values): string
     {
-        $values = array_map(function ($val) {
-            if (strpos($val, ':') === 0 || $val === '?') {
-                return $val;
-            }
-
-            if (is_string($val)) {
-                return "'$val'";
-            }
-
-            return $val;
-        }, $values);
-
-        return "$key IN " . '(' . implode(', ', $values) . ')';
+        return "$key IN " . '(' . implode(', ', array_map([self::class, 'value'], $values)) . ')';
     }
 
     /**
@@ -137,18 +125,41 @@ final class Expr
      */
     public static function notIn(string $key, array $values): string
     {
-        $values = array_map(function ($val) {
-            if (strpos($val, ':') === 0 || $val === '?') {
-                return $val;
-            }
+        return "$key NOT IN (" . implode(', ', array_map([self::class, 'value'], $values)) . ')';
+    }
 
-            if (is_string($val)) {
-                return "'$val'";
-            }
+    /**
+     * Returns a value of an IN list as SQL: a placeholder as is, a number as is, a string quoted.
+     *
+     * A quote is escaped by doubling it, which every SQL database understands. A backslash is refused, because
+     * MySQL and MariaDB read it as an escape character and could end the string early: such a value must be bound
+     * as a parameter.
+     *
+     * @param mixed $value
+     * @return string
+     */
+    private static function value($value): string
+    {
+        if (is_int($value)) {
+            return (string)$value;
+        }
 
-            return $val;
-        }, $values);
+        if (is_float($value) && is_finite($value)) {
+            return (string)$value;
+        }
 
-        return "$key NOT IN (" . implode(', ', $values) . ')';
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(sprintf('An IN value must be an int, a float or a string, %s given.', gettype($value)));
+        }
+
+        if ($value === '?' || preg_match('/^:[A-Za-z_]\w*$/', $value) === 1) {
+            return $value;
+        }
+
+        if (strpbrk($value, "\\\0") !== false) {
+            throw new \InvalidArgumentException('An IN value with a backslash or a NUL byte must be bound as a parameter.');
+        }
+
+        return "'" . str_replace("'", "''", $value) . "'";
     }
 }
