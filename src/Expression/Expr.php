@@ -149,7 +149,7 @@ final class Expr
         }
 
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(sprintf('An IN value must be an int, a float or a string, %s given.', gettype($value)));
+            throw new \InvalidArgumentException(sprintf('An IN value must be an int, a float or a string, %s given.', get_debug_type($value)));
         }
 
         if ($value === '?' || preg_match('/^:[A-Za-z_]\w*$/', $value) === 1) {

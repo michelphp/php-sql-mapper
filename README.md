@@ -4,7 +4,7 @@ A powerful PHP library that not only builds complex SQL queries but also maps th
 
 ## Installation
 
-You can install this library via [Composer](https://getcomposer.org/). Make sure your project meets the minimum PHP version requirement of 7.4 or higher.
+You can install this library via [Composer](https://getcomposer.org/). Make sure your project meets the minimum PHP version requirement of 8.2 or higher.
 
 ```bash
 composer require michel/php-sql-mapper

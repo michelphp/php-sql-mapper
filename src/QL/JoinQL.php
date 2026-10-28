@@ -145,8 +145,8 @@ final class JoinQL
         string $toTableAlias,         // The alias for the joined table (used in the query)
         array  $joinConditions,       // The conditions for the JOIN clause (e.g., ['posts.user_id', '=', 'users.id'])
         bool   $isOneToMany = false,  // Whether the relationship is OneToMany (default is false for OneToOne)
-        string $relationKey = null,   // The key to use for the relationship in the result set (e.g., 'user' to replace 'user_id')
-        string $sourceForeignKey = null // The foreign key in the source table (e.g., 'user_id' in 'posts')
+        ?string $relationKey = null,   // The key to use for the relationship in the result set (e.g., 'user' to replace 'user_id')
+        ?string $sourceForeignKey = null // The foreign key in the source table (e.g., 'user_id' in 'posts')
     ): self
     {
         if ($this->selectQuery === null) {
@@ -176,8 +176,8 @@ final class JoinQL
         string $toTableAlias,         // The alias for the joined table (used in the query)
         array  $joinConditions,       // The conditions for the JOIN clause (e.g., ['posts.user_id', '=', 'users.id'])
         bool   $isOneToMany = false,  // Whether the relationship is OneToMany (default is false for OneToOne)
-        string $relationKey = null,   // The key to use for the relationship in the result set (e.g., 'user' to replace 'user_id')
-        string $sourceForeignKey = null // The foreign key in the source table (e.g., 'user_id' in 'posts')
+        ?string $relationKey = null,   // The key to use for the relationship in the result set (e.g., 'user' to replace 'user_id')
+        ?string $sourceForeignKey = null // The foreign key in the source table (e.g., 'user_id' in 'posts')
     ): self
     {
         if ($this->selectQuery === null) {

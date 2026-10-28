@@ -21,8 +21,8 @@ final class Table
         string $table,
         string $alias,
         bool $isOneToMany = false,
-        string $relationKey = null,
-        string $sourceForeignKey = null
+        ?string $relationKey = null,
+        ?string $sourceForeignKey = null
     )
     {
         $this->table = $table;
