@@ -284,9 +284,11 @@ echo "IN Expression: $inExpr"; // Outputs: IN Expression: category_id IN (1, 2, 
 use Michel\SqlMapper\Expression\Expr;
 
 // Example: Generate a NOT IN expression
-$notInExpr = Expr::notIn('role', ['"admin"', '"manager"']);
-echo "NOT IN Expression: $notInExpr"; // Outputs: NOT IN Expression: role NOT IN ("admin", "manager")
+$notInExpr = Expr::notIn('role', ['admin', 'manager']);
+echo "NOT IN Expression: $notInExpr"; // Outputs: NOT IN Expression: role NOT IN ('admin', 'manager')
 ```
+
+`in()` and `notIn()` accept ints, floats, strings and placeholders (`:name`, `?`). Strings are quoted and their quotes escaped; a string holding a backslash is refused: bind such values as parameters.
 
 These examples demonstrate how to use each `Expr` class method to generate SQL expressions for various comparison and conditional operations. Incorporate these methods into your SQL Query Builder usage to construct complex and precise SQL queries effectively.
 
@@ -360,7 +362,7 @@ The $user variable will contain a perfectly structured array:
 Here is how to handle a `one-to-one` relationship, where a post has a single author.
 
 ```php
-use Michel\SqlMapper\\QL\JoinQL;
+use Michel\SqlMapper\QL\JoinQL;
 
 $pdo = new PDO('your_dsn', 'user', 'pass');
 $joinQL = new JoinQL($pdo);
@@ -395,6 +397,10 @@ The $post variable will look like this:
 ```
 
 By using `JoinQL`, you delegate the complex task of structuring relational data to the library, resulting in cleaner, more readable application code.
+
+### Pagination with one-to-many joins
+
+`setFirstResult()` and `setMaxResults()` count **root rows**, not SQL rows: with a one-to-many join, `setMaxResults(10)` returns 10 users, each with all their posts. JoinQL first selects the ids of the page, then loads those rows with their relations.
 
 ## Features
 
